@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "listen_address": ":21",
+  "accesses": [
+    {
+      "user": "anonymous",
+      "pass": "*",
+      "fs": "os",
+      "params": {
+        "basePath": "/mnt/iphone/DCIM"
+      }
+    }
+  ]
+}

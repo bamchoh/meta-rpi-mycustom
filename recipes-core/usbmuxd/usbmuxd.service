@@ -1,0 +1,10 @@
+[Unit]
+Description=USB Multiplex Daemon
+After=network.target
+
+[Service]
+ExecStart=/usr/sbin/usbmuxd --user root --foreground
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

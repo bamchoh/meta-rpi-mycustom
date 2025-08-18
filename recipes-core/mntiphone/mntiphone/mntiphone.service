@@ -1,0 +1,14 @@
+[Unit]
+Description=Mount iPhone automatically
+After=usbmuxd.service
+Requires=usbmuxd.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/mntiphone.sh
+RestartSec=5
+StartLimitIntervalSec=60
+StartLimitBurst=100
+
+[Install]
+WantedBy=multi-user.target
