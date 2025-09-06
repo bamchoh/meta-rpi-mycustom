@@ -1,0 +1,17 @@
+[Unit]
+Description=FTP server
+After=multi-user.target
+Wants=multi-user.target
+
+[Service]
+Type=simple
+ExecStartPre=/bin/sleep 5
+ExecStart=/usr/bin/my-dashboard
+StandardOutput=journal
+StandardError=journal
+RestartSec=5
+StartLimitIntervalSec=60
+StartLimitBurst=100
+
+[Install]
+WantedBy=multi-user.target

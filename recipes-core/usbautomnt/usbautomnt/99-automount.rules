@@ -1,0 +1,2 @@
+KERNEL=="sd[a-z][0-9]", ACTION=="add", ENV{SYSTEMD_WANTS}="usb-automount@%k.service"
+KERNEL=="sd[a-z][0-9]", ACTION=="remove", ENV{SYSTEMD_WANTS}="usb-automount@%k.service"

@@ -1,7 +1,7 @@
 #!/bin/sh
 
 mntiphone() {
-    MOUNT_POINT="/mnt/iphone"
+    MOUNT_POINT="/run/media/iphone"
 
     is_mounted() {
         mount | grep -q "$MOUNT_POINT"

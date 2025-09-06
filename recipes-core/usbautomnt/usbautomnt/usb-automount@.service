@@ -1,0 +1,10 @@
+[Unit]
+Description=USB automount for %I
+After=dev-%i.device
+BindsTo=dev-%i.device
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/usb-automount.sh %I
+ExecStop=/usr/bin/usb-automount.sh %I remove
