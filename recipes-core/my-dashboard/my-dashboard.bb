@@ -5,6 +5,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/MIT;md5=0835ad
 SRC_URI = "file://main.c \
            file://font8x8_basic.h \
            file://my-dashboard.service \
+           file://pidrive.h \
 "
 
 S = "${WORKDIR}"

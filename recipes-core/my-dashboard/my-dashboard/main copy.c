@@ -11,10 +11,8 @@
 #include <net/if.h>
 #include <arpa/inet.h>
 #include <dirent.h>
-#include <time.h>
 
 #include "font8x8_basic.h"
-#include "pidrive.h"
 
 // ピクセル描画
 void put_pixel(char *fbp, int x, int y, int r, int g, int b,
@@ -178,38 +176,16 @@ int disp_mnt_status(char *fbp, struct fb_var_screeninfo vinfo, struct fb_fix_scr
     return 0;
 }
 
-int disp_title(char *fbp, struct fb_var_screeninfo vinfo, struct fb_fix_screeninfo finfo) {
+int disp_title(char *fbp, struct fb_var_screeninfo vinfo, struct fb_fix_screeninfo finfo,
+                 int offset_x, int offset_y) {
 
-    int x = 0;
-    int y = 0;
-    for(int i = 9600; i < PIDRIVE_PNG_SIZE; i++) {
-        if(i > 0 && i % (320/8) == 0) {
-            y += 1;
-        }
-        x = (i % (320/8))+(80/8);
-        unsigned char bits = pidrive_png[i];
-        for (int col = 0; col < 8; col++) {
-            if (bits & (1 << col)) {
-                put_pixel(fbp, (x*8) + (8-col), y, 255, 255, 255, vinfo, finfo);
-            } else {
-                put_pixel(fbp, (x*8) + (8-col), y, 0, 0, 0, vinfo, finfo); // 背景を黒
-            }
-        }
-    }
+    char *str1 = "*****************************";
+    char *str2 = "* iPhone Data Gateway       *";
+    draw_text(fbp, vinfo, finfo, offset_x, offset_x+0, str1, 255, 255, 255);
+    draw_text(fbp, vinfo, finfo, offset_x, offset_x+8, str2, 255, 255, 255);
+    draw_text(fbp, vinfo, finfo, offset_x, offset_x+16, str1, 255, 255, 255);
 
     return 0;
-}
-
-void disp_current_time(char *fbp, struct fb_var_screeninfo vinfo, struct fb_fix_screeninfo finfo, int x, int y) {
-    time_t now = time(NULL);
-    struct tm *tm_now = localtime(&now);
-    char buf[32];
-    if (tm_now) {
-        strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", tm_now);
-        draw_text(fbp, vinfo, finfo, x, y, buf, 0, 255, 255);
-    } else {
-        draw_text(fbp, vinfo, finfo, x, y, "Time error", 255, 0, 0);
-    }
 }
 
 void disp_media_dir(char *fbp, struct fb_var_screeninfo vinfo, struct fb_fix_screeninfo finfo, int offset_x, int offset_y) {
@@ -256,40 +232,37 @@ int main()
     // 背景を黒
     memset(fbp, 0, screensize);
 
-    disp_title(fbp, vinfo, finfo);
-
-    int offset_x = 98;
-    int offset_y = 64;
+    int offset_x = 20;
+    int offset_y = 20;
 
     char loading_chars[9] = { '/', '-', '\\', '|', '/', '-', '\\', '|', 0 };
     int loading_index = 0;
     while(1) {
+        disp_title(fbp, vinfo, finfo, offset_x, offset_y);
+
         char *str1 = "+--------------------------------+";
+        draw_text          (fbp, vinfo, finfo, offset_x, offset_y+(4*8), "[IP Address]", 0, 255, 255);
+        draw_text          (fbp, vinfo, finfo, offset_x, offset_y+(5*8), str1, 255, 255, 255);
+        disp_ip_addr       (fbp, vinfo, finfo, offset_x, offset_y+(6*8));
+        draw_text          (fbp, vinfo, finfo, offset_x, offset_y+(7*8), str1, 255, 255, 255);
+        draw_text          (fbp, vinfo, finfo, offset_x, offset_y+(8*8), "", 255, 255, 255);
+        draw_text          (fbp, vinfo, finfo, offset_x, offset_y+(9*8), "[Service Status]", 0, 255, 255);
+        draw_text          (fbp, vinfo, finfo, offset_x, offset_y+(10*8), str1, 255, 255, 255);
+        disp_service_status(fbp, vinfo, finfo, offset_x, offset_y+(11*8), "go-ftpserver");
+        disp_service_status(fbp, vinfo, finfo, offset_x, offset_y+(12*8), "usbmuxd");
+        draw_text          (fbp, vinfo, finfo, offset_x, offset_y+(13*8), str1, 255, 255, 255);
+        draw_text          (fbp, vinfo, finfo, offset_x, offset_y+(14*8), "", 255, 255, 255);
+        draw_text          (fbp, vinfo, finfo, offset_x, offset_y+(15*8), "[iPhone Status]", 0, 255, 255);
+        draw_text          (fbp, vinfo, finfo, offset_x, offset_y+(16*8), str1, 255, 255, 255);
+        disp_mnt_status    (fbp, vinfo, finfo, offset_x, offset_y+(17*8), "/run/media/iphone/DCIM", "iPhone");
+        draw_text          (fbp, vinfo, finfo, offset_x, offset_y+(18*8), str1, 255, 255, 255);
+        draw_text          (fbp, vinfo, finfo, offset_x, offset_y+(19*8), "", 255, 255, 255);
+        draw_text          (fbp, vinfo, finfo, offset_x, offset_y+(20*8), "[USB storage Status]", 0, 255, 255);
+        draw_text          (fbp, vinfo, finfo, offset_x, offset_y+(21*8), "", 255, 255, 255);
+        disp_media_dir     (fbp, vinfo, finfo, offset_x+(2*8), offset_y+(22*8));
 
         char loading[2] = { loading_chars[loading_index], 0 };
-        draw_text (fbp, vinfo, finfo, offset_x + 22 * 8, offset_y+(4*8), loading, 0, 255, 0);
-        disp_current_time  (fbp, vinfo, finfo, offset_x, offset_y+(4*8));
-        draw_text          (fbp, vinfo, finfo, offset_x, offset_y+(5*8), "", 255, 255, 255);
-        draw_text          (fbp, vinfo, finfo, offset_x, offset_y+(6*8), "[IP Address]", 0, 255, 255);
-        draw_text          (fbp, vinfo, finfo, offset_x, offset_y+(7*8), str1, 255, 255, 255);
-        disp_ip_addr       (fbp, vinfo, finfo, offset_x, offset_y+(8*8));
-        draw_text          (fbp, vinfo, finfo, offset_x, offset_y+(9*8), str1, 255, 255, 255);
-        draw_text          (fbp, vinfo, finfo, offset_x, offset_y+(10*8), "", 255, 255, 255);
-        draw_text          (fbp, vinfo, finfo, offset_x, offset_y+(11*8), "[Service Status]", 0, 255, 255);
-        draw_text          (fbp, vinfo, finfo, offset_x, offset_y+(12*8), str1, 255, 255, 255);
-        disp_service_status(fbp, vinfo, finfo, offset_x, offset_y+(13*8), "go-ftpserver");
-        disp_service_status(fbp, vinfo, finfo, offset_x, offset_y+(14*8), "usbmuxd");
-        draw_text          (fbp, vinfo, finfo, offset_x, offset_y+(15*8), str1, 255, 255, 255);
-        draw_text          (fbp, vinfo, finfo, offset_x, offset_y+(16*8), "", 255, 255, 255);
-        draw_text          (fbp, vinfo, finfo, offset_x, offset_y+(17*8), "[iPhone Status]", 0, 255, 255);
-        draw_text          (fbp, vinfo, finfo, offset_x, offset_y+(18*8), str1, 255, 255, 255);
-        disp_mnt_status    (fbp, vinfo, finfo, offset_x, offset_y+(19*8), "/run/media/iphone/DCIM", "iPhone");
-        draw_text          (fbp, vinfo, finfo, offset_x, offset_y+(20*8), str1, 255, 255, 255);
-        draw_text          (fbp, vinfo, finfo, offset_x, offset_y+(21*8), "", 255, 255, 255);
-        draw_text          (fbp, vinfo, finfo, offset_x, offset_y+(22*8), "[USB storage Status]", 0, 255, 255);
-        draw_text          (fbp, vinfo, finfo, offset_x, offset_y+(23*8), "", 255, 255, 255);
-        disp_media_dir  (fbp, vinfo, finfo, offset_x+16, offset_y+(24*8));
-
+        draw_text(fbp, vinfo, finfo, offset_x + 22 * 8, offset_y + 8, loading, 0, 255, 0);
         usleep(200000); // 200ms
         loading_index = (loading_index + 1) % 8;
     }
